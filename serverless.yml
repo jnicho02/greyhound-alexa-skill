@@ -20,8 +20,9 @@ package:
     - .cache/**
     - env/**
     - tests/**
+    - handler.pyc
     - intents.json
-    - LICENCE
+    - LICENSE
     - list_of_foods.txt
     - README.md
     - requirements.txt
