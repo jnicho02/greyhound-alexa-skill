@@ -1,0 +1,19 @@
+{
+    "intents": [
+    {
+      "intent": "CanItEat",
+      "slots": [
+        {
+          "name": "food",
+          "type": "LIST_OF_FOODS"
+        }
+      ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }
+  ]
+}

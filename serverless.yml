@@ -1,0 +1,30 @@
+service: greyhound-alexa-skill
+
+provider:
+  name: aws
+  runtime: python3.6
+  stage: dev
+  region: eu-west-1
+
+# you can define service wide environment variables here
+#  environment:
+#    variable1: value1
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.py
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.py
+#    - exclude-me-dir/**
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - alexaSkill
+
+#    Define function environment variables here
+#    environment:
+#      variable2: value2
