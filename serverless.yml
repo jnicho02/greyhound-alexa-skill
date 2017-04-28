@@ -11,13 +11,21 @@ provider:
 #    variable1: value1
 
 # you can add packaging information here
-#package:
+package:
 #  include:
 #    - include-me.py
 #    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
+  exclude:
+    - __pycache__/**
+    - .cache/**
+    - env/**
+    - tests/**
+    - intents.json
+    - LICENCE
+    - list_of_foods.txt
+    - README.md
+    - requirements.txt
+    - sample_utterances.txt
 
 functions:
   hello:
