@@ -115,9 +115,9 @@ def can_it_eat(intent):
 # --------------- Helpers ---------------
 
 def value(intent, name):
-    if intent['slots'][name]:
+    try:
         return intent['slots'][name]['value'].lower()
-    else:
+    except ValueError:
         return None
 
 
