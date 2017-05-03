@@ -7,4 +7,4 @@ source env/bin/activate
 pip install -r requirements.txt
 
 # to test
-python -m pytest tests
+py.test tests/test_handler.py
