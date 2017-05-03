@@ -10,18 +10,23 @@ def hello(event, context):
     if event['session']['new'] == True:
         on_session_started(event['request'], event['session'])
 
+    response = None
     if event['request']['type'] == "LaunchRequest":
-        return on_launch(event['request'], event['session'])
+        response = on_launch(event['request'], event['session'])
     elif event['request']['type'] == "IntentRequest":
         intent_name = event['request']['intent']['name']
         if intent_name == "AMAZON.HelpIntent":
-            return on_help(event['request'], event['session'])
-        elif intent_name == "AMAZON.CancelIntent" or intent_name == "AMAZON.StopIntent":
-            return on_session_ended(event['request'], event['session'])
+            response = on_help(event['request'], event['session'])
+        elif intent_name == "AMAZON.CancelIntent":
+            response = on_session_ended(event['request'], event['session'])
+        elif intent_name == "AMAZON.StopIntent":
+            response = on_session_ended(event['request'], event['session'])
         else:
-            return on_intent(event['request'], event['session'])
+            response = on_intent(event['request'], event['session'])
     elif event['request']['type'] == "SessionEndedRequest":
-        return on_session_ended(event['request'], event['session'])
+        response = on_session_ended(event['request'], event['session'])
+
+    return response
 
 # --------------- Events ------------------
 

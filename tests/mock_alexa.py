@@ -3,7 +3,6 @@ class MockAlexa(object):
     """
 
     def __init__(self, name, handler):
-        print(name)
         self.name = name
         self.handler = handler
         self.active = False
@@ -53,6 +52,17 @@ class MockAlexa(object):
         return service_response
 
 
+    def timeout(self):
+        new_session = self.activate()
+        intent_name = None
+        slots = None
+        request_type = "SessionEndedRequest"
+        service_request = self.alexa(new_session, request_type, intent_name, slots)
+        service_request["request"]["reason"] = 'EXCEEDED_MAX_REPROMPTS'
+        service_response = self.handler.hello(service_request, None)
+        return service_response
+
+
     def alexa(self, new_session, request_type, intent_name, slots):
         # new_session = True or False
         # request_type = "LaunchRequest", "IntentRequest"
@@ -98,6 +108,7 @@ class MockAlexa(object):
         }
         if "SessionEndedRequest" in request_type:
             service_request["request"]["reason"] = 'USER_INITIATED'
+            #  EXCEEDED_MAX_REPROMPTS if timed out
             self.active = False
         if "IntentRequest" in request_type:
             service_request["request"]["intent"] = {

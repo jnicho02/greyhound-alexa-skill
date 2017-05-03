@@ -11,6 +11,13 @@ class TestHandler(unittest.TestCase):
         assert "Hello" in service_response["response"]["outputSpeech"]["text"]
 
 
+    def test_timeout(self):
+        alexa = MockAlexa("greyhound advisor", handler)
+        service_response = alexa.ask("open greyhound advisor")
+        service_response = alexa.timeout()
+        assert "Thank you for speaking to me" in service_response["response"]["outputSpeech"]["text"]
+
+
     def test_help(self):
         alexa = MockAlexa("greyhound advisor", handler)
         alexa.ask("open greyhound advisor")
