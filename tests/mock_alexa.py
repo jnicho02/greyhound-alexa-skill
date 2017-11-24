@@ -1,3 +1,5 @@
+import re
+
 class MockAlexa(object):
     """A pretend Alexa.
     """
@@ -17,39 +19,48 @@ class MockAlexa(object):
         return new_session
 
 
-    def ask(self, words):
+    def hears(self, words):
         new_session = self.activate()
         intent_name = None
         slots = None
         request_type = ""
         if "open {}".format(self.name) in words:
             request_type = "LaunchRequest"
-        if "help".format(self.name) in words:
+        if "help" in words:
             request_type = "IntentRequest"
             intent_name = "AMAZON.HelpIntent"
-        if "exit".format(self.name) in words:
+        if "exit" in words:
             request_type = "SessionEndedRequest"
-        if "cancel".format(self.name) in words:
+        if "cancel" in words:
             request_type = "IntentRequest"
             intent_name = "AMAZON.CancelIntent"
-        if "stop".format(self.name) in words:
+        if "stop" in words:
             request_type = "IntentRequest"
-            intent_name = "AMAZON.StopIntent"
-        sample_utterance = "CanItEat can a greyhound eat {food}"
-        print("you asked, '{}'".format(words))
-        if "can a greyhound eat" in words:
+#            intent_name = "AMAZON.StopIntent"
+            intent_name = "CanItEat"
+            slots = {
+                "food": {
+                    "name": "food",
+                    "confirmationStatus": "NONE"
+                }
+            }
+#        sample_utterance = "CanItEat can a dog eat {food}"
+        if "can a dog eat" in words:
             request_type = "IntentRequest"
             intent_name = "CanItEat"
-            food = "alcohol"
+            m = re.match(r"can a dog eat (.*)", words)
+            food = m.group(1)
             slots = {
                 "food": {
                     "name": "food",
                     "value": food
                 }
             }
-        request = self.alexa(new_session, request_type, intent_name, slots)
-        service_response = self.handler.hello(request, None)
-        return service_response
+        request = self.service_request(
+            new_session, request_type, intent_name, slots
+        )
+        self.response = self.handler.hello(request, None)
+        return self.response
 
 
     def timeout(self):
@@ -57,13 +68,15 @@ class MockAlexa(object):
         intent_name = None
         slots = None
         request_type = "SessionEndedRequest"
-        service_request = self.alexa(new_session, request_type, intent_name, slots)
-        service_request["request"]["reason"] = 'EXCEEDED_MAX_REPROMPTS'
-        service_response = self.handler.hello(service_request, None)
-        return service_response
+        request = self.service_request(
+            new_session, request_type, intent_name, slots
+        )
+        request["request"]["reason"] = 'EXCEEDED_MAX_REPROMPTS'
+        self.response = self.handler.hello(request, None)
+        return self.response
 
 
-    def alexa(self, new_session, request_type, intent_name, slots):
+    def service_request(self, new_session, request_type, intent_name, slots):
         # new_session = True or False
         # request_type = "LaunchRequest", "IntentRequest"
         # intent_name = "CanItEat" (from sample_utterances.txt)
@@ -113,8 +126,11 @@ class MockAlexa(object):
         if "IntentRequest" in request_type:
             service_request["request"]["intent"] = {
                 "name": intent_name,
-                'confirmationStatus': 'NONE'
+                "confirmationStatus": "NONE"
             }
         if slots != None:
             service_request["request"]["intent"]["slots"] = slots
         return service_request
+
+    def says(self):
+        return self.response["response"]["outputSpeech"]["text"]

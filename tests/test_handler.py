@@ -2,66 +2,44 @@ import unittest
 import handler
 from tests.mock_alexa import MockAlexa
 
+APPNAME = "greyhound advisor"
+
 class TestHandler(unittest.TestCase):
+
+    def setUp(self):
+        self.alexa = MockAlexa(APPNAME, handler)
+        self.alexa.hears("open {}".format(APPNAME))
 
 
     def test_launch(self):
-        alexa = MockAlexa("greyhound advisor", handler)
-        service_response = alexa.ask("open greyhound advisor")
-        assert "Hello" in service_response["response"]["outputSpeech"]["text"]
+        assert "Hello" in self.alexa.says()
 
 
     def test_timeout(self):
-        alexa = MockAlexa("greyhound advisor", handler)
-        service_response = alexa.ask("open greyhound advisor")
-        service_response = alexa.timeout()
-        assert "Thank you for speaking to me" in service_response["response"]["outputSpeech"]["text"]
+        self.alexa.timeout()
+        assert "Thank you for speaking to me" in self.alexa.says()
 
 
     def test_help(self):
-        alexa = MockAlexa("greyhound advisor", handler)
-        alexa.ask("open greyhound advisor")
-        service_response = alexa.ask("help")
-        assert "Hello" in service_response["response"]["outputSpeech"]["text"]
+        self.alexa.hears("help")
+        assert "Hello" in self.alexa.says()
+
+
+    def test_stop(self):
+        self.alexa.hears("stop")
+        assert "Thank you for speaking to me" in self.alexa.says()
 
 
     def test_exit(self):
-        alexa = MockAlexa("greyhound advisor", handler)
-        alexa.ask("open greyhound advisor")
-        service_response = alexa.ask("exit")
-        assert "Thank you for speaking to me" in service_response["response"]["outputSpeech"]["text"]
+        self.alexa.hears("exit")
+        assert "Thank you for speaking to me" in self.alexa.says()
 
 
-    def test_can_it_eat_alcohol_unit(self):
-        intent = {
-            "name": "CanItEat",
-            "slots": {
-                "food": {
-                  "name": "food",
-                  "value": "alcohol"
-                }
-            }
-        }
-        response = handler.can_it_eat(intent)
-        assert "No, a greyhound must not eat alcohol" in response
+    def test_eating_alcohol(self):
+        self.alexa.hears("can a dog eat alcohol")
+        assert "No, a dog must not eat alcohol" in self.alexa.says()
 
 
-    def test_can_it_eat_monkeys_unit(self):
-        intent = {
-            "name": "CanItEat",
-            "slots": {
-                "food": {
-                  "name": "food",
-                  "value": "monkeys"
-                }
-            }
-        }
-        response = handler.can_it_eat(intent)
-        assert "I am not sure" in response
-
-
-    def test_can_it_eat_alcohol(self):
-        alexa = MockAlexa("greyhound advisor", handler)
-        alexa.ask("open greyhound advisor")
-        service_response = alexa.ask("can a greyhound eat alcohol")
-        assert "No, a greyhound must not eat alcohol" in service_response["response"]["outputSpeech"]["text"]
+    def test_eating_beans(self):
+        self.alexa.hears("can a dog eat beans")
+        assert "I don't know about beans so cannot comment" in self.alexa.says()
