@@ -1,10 +1,29 @@
+import boto3
+import botocore.config
+import datetime
 import dog
+import json
+
+bucket = 'greyhound-alexa-skill-de-serverlessdeploymentbuck-14c51cxj3j8zx'
+s3 = boto3.client(
+    's3',
+    'eu-west-1',
+    config=botocore.config.Config(s3={'addressing_style':'path'})
+)
 
 def hello(event, context):
     """ handle Amazon Alexa events.
 
     routes the common Alexa request types to event methods.
     """
+
+    s3.put_object(
+        ACL='public-read',
+        Bucket=bucket,
+        Key="logging/{}.json".format(datetime.date.today().strftime("%I:%M%p_on_%d_%B_%Y")),
+        Body=json.dumps(event),
+        ContentType='application/json'
+    )
 
     for k, v in event.items():
         print(k, v)
