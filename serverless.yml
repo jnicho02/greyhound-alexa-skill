@@ -6,15 +6,7 @@ provider:
   stage: dev
   region: eu-west-1
 
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
 package:
-#  include:
-#    - include-me.py
-#    - include-me-dir/**
   exclude:
     - __pycache__/**
     - .cache/**
@@ -34,6 +26,11 @@ functions:
     events:
       - alexaSkill
 
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
+#plugins:
+#  - serverless-python-requirements
+
+#custom:
+#  pythonRequirements:
+#    noDeploy:
+#      - boto3
+#      - pytest

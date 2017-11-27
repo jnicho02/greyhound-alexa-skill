@@ -3,6 +3,7 @@ import botocore.config
 import datetime
 import dog
 import json
+import mixpanel
 import os
 
 bucket = 'greyhound-alexa-skill-de-serverlessdeploymentbuck-14c51cxj3j8zx'
@@ -11,12 +12,16 @@ s3 = boto3.client(
     'eu-west-1',
     config=botocore.config.Config(s3={'addressing_style':'path'})
 )
+MIXPANEL_TOKEN = os.getenv('MIXPANEL_TOKEN', 'xxx')
+mp = mixpanel.Mixpanel(MIXPANEL_TOKEN)
 
 def hello(event, context):
     """ handle Amazon Alexa events.
 
     routes the common Alexa request types to event methods.
     """
+
+    user_id = event['session']['user']['userId']
 
     if os.getenv('LOGEVENTS', 'false') == "true":
         s3.put_object(
@@ -34,10 +39,11 @@ def hello(event, context):
         on_session_started(event['request'], event['session'])
 
     response = None
+    request_type = event['request']['type']
 
-    if event['request']['type'] == "LaunchRequest":
+    if request_type == "LaunchRequest":
         response = on_launch(event['request'], event['session'])
-    elif event['request']['type'] == "IntentRequest":
+    elif request_type == "IntentRequest":
         intent_name = event['request']['intent']['name']
         if intent_name == "AMAZON.HelpIntent":
             response = on_help(event['request'], event['session'])
@@ -47,7 +53,7 @@ def hello(event, context):
             response = on_session_ended(event['request'], event['session'])
         else:
             response = on_intent(event['request'], event['session'])
-    elif event['request']['type'] == "SessionEndedRequest":
+    elif request_type == "SessionEndedRequest":
         response = on_session_ended(event['request'], event['session'])
 
     return response
@@ -60,14 +66,17 @@ def on_session_started(request, session):
 
 
 def on_launch(request, session):
+    mp.track(session['user']['userId'], 'Launched')
     return welcome()
 
 
 def on_help(request, session):
+    mp.track(session['user']['userId'], 'Asked for help')
     return welcome()
 
 
 def on_session_ended(request, session):
+    mp.track(session['user']['userId'], 'Ended')
     return goodbye()
 
 
@@ -78,13 +87,14 @@ def on_intent(request, session):
     if not('value' in intent['slots']['food']):
         return goodbye()
     if name == "CanItEat":
+        food = value(intent, 'food')
+        mp.track(session['user']['userId'], 'can a dog eat', {"food":food})
         say = can_it_eat(intent)
     session_attributes = {}
-    card_title = name
     reprompt = "What would you like to know? Ask away"
     should_end_session = False
     return response(session_attributes, speechlet_response(
-        card_title, say, reprompt, should_end_session))
+        name, say, reprompt, should_end_session))
 
 
 # --------------- Functions that control the skill's behavior ------------------
@@ -111,8 +121,6 @@ def goodbye():
 
 def can_it_eat(intent):
     food = value(intent, 'food')
-#    if "None" in food:
-#        return goodbye()
     say = dog.can_eat(food)
     return say
 

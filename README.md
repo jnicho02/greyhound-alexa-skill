@@ -7,6 +7,7 @@ virtualenv -p python3 env
 source env/bin/activate
 pip install -r requirements.txt
 ```
+sls plugin install -n serverless-python-requirements
 
 to send Alexa events to S3:
 ```sh
