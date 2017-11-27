@@ -3,6 +3,7 @@ import botocore.config
 import datetime
 import dog
 import json
+import os
 
 bucket = 'greyhound-alexa-skill-de-serverlessdeploymentbuck-14c51cxj3j8zx'
 s3 = boto3.client(
@@ -17,13 +18,14 @@ def hello(event, context):
     routes the common Alexa request types to event methods.
     """
 
-    s3.put_object(
-        ACL='public-read',
-        Bucket=bucket,
-        Key="logging/{}.json".format(datetime.date.today().strftime("%I:%M%p_on_%d_%B_%Y")),
-        Body=json.dumps(event),
-        ContentType='application/json'
-    )
+    if os.getenv('LOGEVENTS', 'false') == "true":
+        s3.put_object(
+            ACL='public-read',
+            Bucket=bucket,
+            Key="logging/{}.json".format(datetime.datetime.now().strftime("%H:%M:%S_on_%d_%B_%Y")),
+            Body=json.dumps(event),
+            ContentType='application/json'
+        )
 
     for k, v in event.items():
         print(k, v)
@@ -32,6 +34,7 @@ def hello(event, context):
         on_session_started(event['request'], event['session'])
 
     response = None
+
     if event['request']['type'] == "LaunchRequest":
         response = on_launch(event['request'], event['session'])
     elif event['request']['type'] == "IntentRequest":
@@ -42,8 +45,6 @@ def hello(event, context):
             response = on_session_ended(event['request'], event['session'])
         elif intent_name == "AMAZON.StopIntent":
             response = on_session_ended(event['request'], event['session'])
-#        elif event['request']['confirmationStatus'] == "NONE":
-#            response = on_session_ended(event['request'], event['session'])
         else:
             response = on_intent(event['request'], event['session'])
     elif event['request']['type'] == "SessionEndedRequest":
@@ -74,8 +75,7 @@ def on_intent(request, session):
     intent = request['intent']
     name = intent['name']
     say = "not sure what to do with {}".format(name)
-    print(intent['slots']['food'])
-    if 'confirmationStatus' in intent['slots']['food']:
+    if not('value' in intent['slots']['food']):
         return goodbye()
     if name == "CanItEat":
         say = can_it_eat(intent)
