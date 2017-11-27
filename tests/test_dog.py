@@ -1,7 +1,7 @@
 import unittest
 import dog
 
-class TestDogfood(unittest.TestCase):
+class TestDog(unittest.TestCase):
 
 
     def test_can_a_dog_eat_alcohol(self):
